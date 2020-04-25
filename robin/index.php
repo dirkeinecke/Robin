@@ -61,6 +61,25 @@
       }
     }
     /* ---------- /EMPTY THE REDIS LOG FILE ---------- */
+
+
+
+    $redis->select(1);
+
+    // Set the value of a key
+    $key = 'product';
+    $redis->set($key, 'MAMP PRO 5');
+
+    // Store data in redis list
+    $redis->lPush('list', 'MAMP PRO');
+    $redis->lPush('list', 'Apache');
+    $redis->lPush('list', 'MySQL');
+    $redis->lPush('list', 'Redis');
+
+
+
+
+
   }
 ?>
 
@@ -119,18 +138,21 @@
 
               if ($page === 'databases') {
                 $out .= '<h2>Databases</h2>';
-                $out .= '<table class="table table-sm table-hover">';
+                $out .= '<table class="table table-bordered table-sm table-hover">';
                 $out .= '<thead>';
                 $out .= '<tr>';
                 $out .= '<th class="border-top-0" scope="col">Database</th>';
+                $out .= '<th class="border-top-0" scope="col">Number of keys</th>';
                 $out .= '<th class="border-top-0" scope="col">Action</th>';
                 $out .= '</tr>';
                 $out .= '</thead>';
                 $out .= '<tbody>';
                 if (isset($redis_configuration['databases']) === true) {
-                  for ((int) $i = 1; $i <= $redis_configuration['databases']; $i++) {
+                  for ((int) $i = 0; $i <= intval($redis_configuration['databases'])-1; $i++) {
+                    $redis->select($i);
                     $out .= '<tr>';
                     $out .= '<td class="nowrap">'.$i.'</td>';
+                    $out .= '<td class="nowrap">'.$redis->dbSize().'</td>';
                     $out .= '<td class="nowrap"><a href="./?page=database&amp;database='.$i.'">Show</a></td>';
                     $out .= '</tr>';
                   }
@@ -141,7 +163,7 @@
 
               if ($page === 'database') {
                 $out .= '<h2>Database '.$database.'</h2>';
-                if (in_array(range(1, intval($redis_configuration['databases'])), $database) === false) {
+                if (in_array(range(0, intval($redis_configuration['databases'])-1), $database) === false) {
                   $out .= '<div class="alert alert-info" role="alert">';
                   $out .= 'The database you specified does not exist.';
                   $out .= '<br>';
@@ -149,7 +171,46 @@
                   $out .= '</div>';
                 } else {
                   $redis->select($database);
-                  $out .= '<p>...</p>';
+                  $keys = $redis->keys('*');
+
+                  $out .= '<h3>Keys</h3>';
+                  if (count($keys) !== 0) {
+                    $out .= '<table class="table table-bordered table-sm table-hover">';
+                    $out .= '<thead>';
+                    $out .= '<tr>';
+                    $out .= '<th class="border-top-0" scope="col">Index</th>';
+                    $out .= '<th class="border-top-0" scope="col">Key</th>';
+                    $out .= '<th class="border-top-0" scope="col">Type</th>';
+                    $out .= '<th class="border-top-0" scope="col">Time to live <small>(ttl / pttl)</small></th>';
+                    $out .= '<th class="border-top-0" scope="col" colspan="4">Actions</th>';
+                    $out .= '</tr>';
+                    $out .= '</thead>';
+                    $out .= '<tbody>';
+                    for ($i = (int) 0; $i < count($keys); $i++) {
+                      $key = $keys[$i];
+                      $ttl = $redis->ttl($key);
+                      $pttl = $redis->pttl($key);
+
+                      $out .= '<tr>';
+                      $out .= '<td class="nowrap text-monospace">'.$i.'</td>';
+                      $out .= '<td class="nowrap text-monospace">'.htmlentities($keys[$i], ENT_QUOTES).'</td>';
+                      $out .= '<td class="nowrap text-monospace">'.htmlentities(redis_key_type_as_string($redis->type($key)), ENT_QUOTES).'</td>';
+                      $out .= '<td class="nowrap text-monospace">'.(($ttl === -1 || $ttl === -2) ? '' : $ttl.' / '.$pttl).'</td>';
+                      $out .= '<td class="nowrap"><a href="#">Edit</a></td>';
+                      $out .= '<td class="nowrap"><a href="#">Rename</a></td>';
+                      $out .= '<td class="nowrap"><a href="#">Move</a></td>';
+                      $out .= '<td class="nowrap"><a href="#">Move</a></td>';
+                      $out .= '</tr>';
+                    }
+                    $out .= '</tbody>';
+                    $out .= '</table>';
+                  } else {
+                    $out .= '<div class="alert alert-info" role="alert">';
+                    $out .= 'This database is empty.';
+                    $out .= '<br>';
+                    $out .= '<a href="./?page=database&amp;database='.$database.'&amp;action=add-key" class="alert-link"><i class="fas fa-plus"></i> Add new key</a>';
+                      $out .= '</div>';
+                  }
                 }
               }
 
