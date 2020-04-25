@@ -23,8 +23,8 @@
       case 'configuration':
         $page = 'configuration';
         break;
-      case 'configuration':
-        $page = 'configuration';
+      case 'info':
+        $page = 'info';
         break;
       case 'logfile':
         $page = 'logfile';
@@ -36,7 +36,7 @@
     exit();
   }
 
-  $redis= new Redis();
+  $redis = new Redis();
   $redis_connected = (bool) false;
 
   try {
@@ -51,6 +51,7 @@
     // Get all Redis server configuration parameters.
     // See https://github.com/phpredis/phpredis#config
     $redis_configuration = $redis->config('GET', '*');
+    $redis_info = $redis->info();
 
     /* ---------- EMPTY THE REDIS LOG FILE ---------- */
     if ($page === 'logfile' && isset($_GET['action']) === true && $_GET['action'] === 'empty') {
@@ -89,6 +90,9 @@
               </li>
               <li class="nav-item">
                 <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=configuration">Configuration</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=info">Information and statistics</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=logfile">Log file</a>
@@ -144,6 +148,7 @@
                   $out .= '<a href="./?page=databases" class="alert-link"><i class="fas fa-angle-left"></i> Back to the database overview</a>';
                   $out .= '</div>';
                 } else {
+                  $redis->select($database);
                   $out .= '<p>...</p>';
                 }
               }
@@ -159,6 +164,27 @@
                 $out .= '</thead>';
                 $out .= '<tbody>';
                 foreach ($redis_configuration as $key => $value) {
+                  $out .= '<tr>';
+                  $out .= '<td class="nowrap">'.htmlentities($key, ENT_QUOTES).'</td>';
+                  $out .= '<td class="nowrap text-monospace">'.htmlentities($value, ENT_QUOTES).'</td>';
+                  $out .= '</tr>';
+                }
+                $out .= '</tbody>';
+                $out .= '</table>';
+              }
+
+              if ($page === 'info') {
+                $out .= '<h2>Info</h2>';
+                $out .= '<p>Information and statistics about the server</p>';
+                $out .= '<table class="table table-sm table-hover">';
+                $out .= '<thead>';
+                $out .= '<tr>';
+                $out .= '<th class="border-top-0" scope="col">Key</th>';
+                $out .= '<th class="border-top-0" scope="col">Value</th>';
+                $out .= '</tr>';
+                $out .= '</thead>';
+                $out .= '<tbody>';
+                foreach ($redis_info as $key => $value) {
                   $out .= '<tr>';
                   $out .= '<td class="nowrap">'.htmlentities($key, ENT_QUOTES).'</td>';
                   $out .= '<td class="nowrap text-monospace">'.htmlentities($value, ENT_QUOTES).'</td>';
