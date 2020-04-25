@@ -162,7 +162,7 @@
               }
 
               if ($page === 'database') {
-                $out .= '<h2>Database '.$database.'</h2>';
+                $out .= '<h2>Database: '.$database.'</h2>';
                 if (in_array(range(0, intval($redis_configuration['databases'])-1), $database) === false) {
                   $out .= '<div class="alert alert-info" role="alert">';
                   $out .= 'The database you specified does not exist.';
