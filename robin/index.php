@@ -199,7 +199,7 @@
                       $out .= '<td class="nowrap"><a href="#">Edit</a></td>';
                       $out .= '<td class="nowrap"><a href="#">Rename</a></td>';
                       $out .= '<td class="nowrap"><a href="#">Move</a></td>';
-                      $out .= '<td class="nowrap"><a href="#">Move</a></td>';
+                      $out .= '<td class="nowrap"><a href="#">Delete</a></td>';
                       $out .= '</tr>';
                     }
                     $out .= '</tbody>';
@@ -216,7 +216,7 @@
 
               if ($page === 'configuration') {
                 $out .= '<h2>Configuration</h2>';
-                $out .= '<table class="table table-sm table-hover">';
+                $out .= '<table class="table table-bordered table-sm table-hover">';
                 $out .= '<thead>';
                 $out .= '<tr>';
                 $out .= '<th class="border-top-0" scope="col">Key</th>';
@@ -237,7 +237,7 @@
               if ($page === 'info') {
                 $out .= '<h2>Info</h2>';
                 $out .= '<p>Information and statistics about the server</p>';
-                $out .= '<table class="table table-sm table-hover">';
+                $out .= '<table class="table table-bordered table-sm table-hover">';
                 $out .= '<thead>';
                 $out .= '<tr>';
                 $out .= '<th class="border-top-0" scope="col">Key</th>';
@@ -266,7 +266,7 @@
                         $out .= '<a href="./?page=logfile&amp;action=empty" class="btn btn-secondary'.(filesize($redis_configuration['logfile']) === 0 ? ' disabled' : '').' btn-sm pt-0 pb-0" role="button">Empty</a>';
                         $out .= '</div>';
                       }
-                      $out .= '<pre class="border bg-light p-3"><code>';
+                      $out .= '<pre class="border bg-light p-2"><code>';
                       $out .= htmlentities(file_get_contents($redis_configuration['logfile']), ENT_QUOTES);
                       $out .= '</code></pre>';
                     } else {
