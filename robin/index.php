@@ -51,51 +51,61 @@
     // Get all Redis server configuration parameters.
     // See https://github.com/phpredis/phpredis#config
     $redis_configuration = $redis->config('GET', '*');
+
+    /* ---------- EMPTY THE REDIS LOG FILE ---------- */
+    if ($page === 'logfile' && isset($_GET['action']) === true && $_GET['action'] === 'empty') {
+      if (isset($redis_configuration['logfile']) === true && $redis_configuration['logfile'] !== '' && file_exists($redis_configuration['logfile']) === true && is_readable($redis_configuration['logfile']) === true && is_writeable($redis_configuration['logfile']) === true) {
+        fclose(fopen($redis_configuration['logfile'], 'w'));
+        header('Location: ./?page=logfile');
+      }
+    }
+    /* ---------- /EMPTY THE REDIS LOG FILE ---------- */
   }
 ?>
 
 <!doctype html>
-<html lang="<?php echo $redis_configuration['language']; ?>">
+<html lang="<?php echo $redis_configuration['language']; ?>" class="h-100">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/custom.css">
-    <title>Robin</title>
+    <title>ROBIN - Redis database administration</title>
   </head>
-  <body>
-    <header class="bg-dark text-white p-3">
-      <h1 class="mb-0">Robin</h1>
-      <p class="lead mb-0">Redis database administration</p>
-    </header>
-    <div class="container-fluid mt-3 mb-3">
-      <?php if ($redis_connected === false): ?>
-        <?php
-          if (isset($redis_connect_exception_message) === true) {
-            echo '<div class="alert alert-danger" role="alert">';
-            echo 'Error: ', htmlentities($redis_connect_exception_message, ENT_QUOTES);
-            echo '</div>';
-          }
-        ?>
-      <?php else: ?>
-        <div class="row">
-          <div class="col-1">
+  <body class="h-100">
+    <div class="container-fluid m-0 p-0 h-100">
+      <div class="row h-100 m-0 p-0">
+        <div class="col-2 pt-3 pl-4 pr-4 bg-dark">
+          <div class="position-fixed">
+            <h1 class="mt-2 mb-0 text-uppercase text-white">Robin</h1>
+            <p class="font-weight-light text-white">Redis database administration</p>
+            <hr>
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a class="nav-link pl-0 pr-0 pb-0" href="./?page=start">Start</a>
+                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=start">Start</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link pl-0 pr-0 pb-0" href="./?page=databases">Databases</a>
+                 <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=databases">Databases</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link pl-0 pr-0 pb-0" href="./?page=configuration">Configuration</a>
+                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=configuration">Configuration</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link pl-0 pr-0 pb-0" href="./?page=logfile">Log file</a>
+                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=logfile">Log file</a>
               </li>
             </ul>
           </div>
-          <div class="col-11">
+        </div>
+        <div class="col-10 pt-4 pl-4 pr-4">
+          <?php if ($redis_connected === false): ?>
+            <?php
+              if (isset($redis_connect_exception_message) === true) {
+                echo '<div class="alert alert-danger" role="alert">';
+                echo 'Error: ', htmlentities($redis_connect_exception_message, ENT_QUOTES);
+                echo '</div>';
+              }
+            ?>
+          <?php else: ?>
             <?php
               $out = (string) '';
 
@@ -160,11 +170,15 @@
 
               if ($page === 'logfile') {
                 $out .= '<h2>Log file</h2>';
-                
                 $error = (string) '';
                 if (isset($redis_configuration['logfile']) === true && $redis_configuration['logfile'] !== '') {
                   if (file_exists($redis_configuration['logfile']) === true) {
                     if (is_readable($redis_configuration['logfile']) === true) {
+                      if (is_writeable($redis_configuration['logfile']) === true) {
+                        $out .= '<div class="text-right mb-2">';
+                        $out .= '<a href="./?page=logfile&amp;action=empty" class="btn btn-secondary'.(filesize($redis_configuration['logfile']) === 0 ? ' disabled' : '').' btn-sm pt-0 pb-0" role="button">Empty</a>';
+                        $out .= '</div>';
+                      }
                       $out .= '<pre class="border bg-light p-3"><code>';
                       $out .= htmlentities(file_get_contents($redis_configuration['logfile']), ENT_QUOTES);
                       $out .= '</code></pre>';
@@ -187,9 +201,9 @@
 
               echo $out;
             ?>
-          </div>
+          <?php endif; ?>
         </div>
-      <?php endif; ?>
+      </div>
     </div>
     <script src="js/jquery-3.4.1.slim.min.js"></script>
     <script src="js/fontawesome.js"></script>
