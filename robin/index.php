@@ -209,7 +209,7 @@
                     $out .= 'This database is empty.';
                     $out .= '<br>';
                     $out .= '<a href="./?page=database&amp;database='.$database.'&amp;action=add-key" class="alert-link"><i class="fas fa-plus"></i> Add new key</a>';
-                      $out .= '</div>';
+                    $out .= '</div>';
                   }
                 }
               }
@@ -261,14 +261,21 @@
                 if (isset($redis_configuration['logfile']) === true && $redis_configuration['logfile'] !== '') {
                   if (file_exists($redis_configuration['logfile']) === true) {
                     if (is_readable($redis_configuration['logfile']) === true) {
-                      if (is_writeable($redis_configuration['logfile']) === true) {
-                        $out .= '<div class="text-right mb-2">';
-                        $out .= '<a href="./?page=logfile&amp;action=empty" class="btn btn-secondary'.(filesize($redis_configuration['logfile']) === 0 ? ' disabled' : '').' btn-sm pt-0 pb-0" role="button">Empty</a>';
+                      $content = file_get_contents($redis_configuration['logfile']);
+                      if ($content === '') {
+                        $out .= '<div class="alert alert-info" role="alert">';
+                        $out .= 'The log file is empty.';
                         $out .= '</div>';
+                      } else {
+                        if (is_writeable($redis_configuration['logfile']) === true) {
+                          $out .= '<div class="text-right mb-2">';
+                          $out .= '<a href="./?page=logfile&amp;action=empty" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Empty</a>';
+                          $out .= '</div>';
+                        }
+                        $out .= '<pre class="border bg-light p-2"><code>';
+                        $out .= htmlentities($content, ENT_QUOTES);
+                        $out .= '</code></pre>';
                       }
-                      $out .= '<pre class="border bg-light p-2"><code>';
-                      $out .= htmlentities(file_get_contents($redis_configuration['logfile']), ENT_QUOTES);
-                      $out .= '</code></pre>';
                     } else {
                       $error = 'The log file cannot be read.';
                     }
