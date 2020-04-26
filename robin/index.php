@@ -167,7 +167,7 @@
                 $out .= '</thead>';
                 $out .= '<tbody>';
                 if (isset($redis_configuration['databases']) === true) {
-                  for ((int) $i = 0; $i <= intval($redis_configuration['databases'])-1; $i++) {
+                  for ($i = (int) 0; $i <= intval($redis_configuration['databases'])-1; $i++) {
                     $redis->select($i);
                     $out .= '<tr>';
                     $out .= '<td class="nowrap">'.$i.'</td>';
