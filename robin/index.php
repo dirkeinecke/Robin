@@ -51,8 +51,6 @@
   if ($redis->isConnected()) {
     $redis_connected = true;
 
-    // Get all Redis server configuration parameters.
-    // See https://github.com/phpredis/phpredis#config
     $redis_configuration = $redis->config('GET', '*');
     if (isset($redis_configuration['databases']) === true) {
       $redis_configuration['databases'] = intval($redis_configuration['databases']);
