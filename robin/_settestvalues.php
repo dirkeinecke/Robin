@@ -27,4 +27,17 @@
   $redis->lPush('list', 'MySQL');
   $redis->lPush('list', 'Redis');
 
+  $redis->select(2);
+
+  // Set the value of a key
+  $key = 'product';
+  $redis->set($key, 'MAMP PRO 5');
+
+  // Store data in redis list
+  $redis->lPush('list', 'MAMP PRO');
+  $redis->lPush('list', 'Apache');
+  $redis->lPush('list', 'MySQL');
+  $redis->lPush('list', 'Redis');
+
+
 ?>
