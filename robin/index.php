@@ -69,17 +69,21 @@
           $redis->select($_GET['database']);
           $result = (bool) $redis->move($_GET['key'], $_GET['target-database']);
           if ($result === false) {
+            $keys_origin_database = $redis->keys($_GET['key']);
             $redis->select($_GET['target-database']);
-            $keys = $redis->keys($_GET['key']);
+            $keys_target_database = $redis->keys($_GET['key']);
 
             $_SESSION['message'] = (array) [
               'type' => (string) 'Error',
               'text' => (string) '<p class="mb-0">Moving the key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> to database <span class="text-monospace font-weight-bold">'.$_GET['target-database'].'</span> failed.</p>',
             ];
-            if (count($keys) !== 0) {
+            if (count($keys_origin_database) === 0) {
+              $_SESSION['message']['text'] .= '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> does not exist in database <span class="text-monospace font-weight-bold">'.$_GET['database'].'</span>.</p>';
+            }
+            if (count($keys_target_database) !== 0) {
               $_SESSION['message']['text'] .= '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> already exists in database <span class="text-monospace font-weight-bold">'.$_GET['target-database'].'</span>.</p>';
             }
-            unset($keys);
+            unset($keys_origin_database, $keys_target_database);
           }
           header('Location: ./?page=database&database='.$_GET['database']);
           exit();
