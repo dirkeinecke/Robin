@@ -61,25 +61,6 @@
       }
     }
     /* ---------- /EMPTY THE REDIS LOG FILE ---------- */
-
-
-
-    $redis->select(1);
-
-    // Set the value of a key
-    $key = 'product';
-    $redis->set($key, 'MAMP PRO 5');
-
-    // Store data in redis list
-    $redis->lPush('list', 'MAMP PRO');
-    $redis->lPush('list', 'Apache');
-    $redis->lPush('list', 'MySQL');
-    $redis->lPush('list', 'Redis');
-
-
-
-
-
   }
 ?>
 
@@ -93,7 +74,7 @@
     <title>ROBIN - Redis database administration</title>
   </head>
   <body class="h-100">
-    <div class="container-fluid m-0 p-0 h-100">
+    <div class="container-fluid m-0 p-0 h-100" style="">
       <div class="row h-100 m-0 p-0">
         <div class="col-2 pt-3 pl-4 pr-4 bg-dark">
           <div class="position-fixed">
@@ -196,10 +177,23 @@
                       $out .= '<td class="nowrap text-monospace">'.htmlentities($keys[$i], ENT_QUOTES).'</td>';
                       $out .= '<td class="nowrap text-monospace">'.htmlentities(redis_key_type_as_string($redis->type($key)), ENT_QUOTES).'</td>';
                       $out .= '<td class="nowrap text-monospace">'.(($ttl === -1 || $ttl === -2) ? '' : $ttl.' / '.$pttl).'</td>';
-                      $out .= '<td class="nowrap"><a href="#">Edit</a></td>';
-                      $out .= '<td class="nowrap"><a href="#">Rename</a></td>';
-                      $out .= '<td class="nowrap"><a href="#">Move</a></td>';
-                      $out .= '<td class="nowrap"><a href="#">Delete</a></td>';
+                      $out .= '<td class="nowrap"><a href="#" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Edit</a></td>';
+                      $out .= '<td class="nowrap"><a href="#" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Rename</a></td>';
+                      $out .= '<td class="nowrap">';
+                      $out .= '<div class="dropdown">';
+                      $out .= '<a href="#" class="btn btn-warning btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdownMenuLink'.$i.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Move to database:</a>';
+                      $out .= '<div class="dropdown-menu" aria-labelledby="dropdownMenuLink'.$i.'">';
+                      if (isset($redis_configuration['databases']) === true) {
+                        for ((int) $i = 0; $i <= intval($redis_configuration['databases'])-1; $i++) {
+                          if ($i !== $database) {
+                            $out .= '<a class="dropdown-item" href="./?page=database&database='.$database.'">'.$i.'</a>';
+                          }
+                        }
+                      }
+                      $out .= '</div>';
+                      $out .= '</div>';
+                      $out .= '</td>';
+                      $out .= '<td class="nowrap"><a href="#" class="btn btn-danger btn-sm pt-0 pb-0" role="button">Delete</a></td>';
                       $out .= '</tr>';
                     }
                     $out .= '</tbody>';
@@ -300,6 +294,7 @@
       </div>
     </div>
     <script src="js/jquery-3.4.1.slim.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/fontawesome.js"></script>
   </body>
 </html>
