@@ -1,4 +1,6 @@
 <?php
+  session_start();
+
   include_once 'php/configuration.php';
   include_once 'php/functions.php';
   include_once 'php/strings/'.$robin_configuration['language'].'.php';
@@ -18,6 +20,7 @@
           $database = (int) $_GET['database'];
         } else {
           header('Location: ./?page=databases');
+          exit();
         }
         break;
       case 'configuration':
@@ -51,13 +54,46 @@
     // Get all Redis server configuration parameters.
     // See https://github.com/phpredis/phpredis#config
     $redis_configuration = $redis->config('GET', '*');
+    if (isset($redis_configuration['databases']) === true) {
+      $redis_configuration['databases'] = intval($redis_configuration['databases']);
+    }
     $redis_info = $redis->info();
+
+    /* ---------- MOVE KEY TO DATABASE ---------- */
+    if ($page === 'database' && isset($_GET['database']) === true && isset($_GET['target-database']) === true && isset($_GET['key']) === true && isset($redis_configuration['databases']) === true) {
+      $_GET['database'] = intval($_GET['database']);
+      $_GET['target-database'] = intval($_GET['target-database']);
+
+      if (redis_database_exists($redis_configuration['databases'], $_GET['database']) === true) {
+        if (redis_database_exists($redis_configuration['databases'], $_GET['target-database']) === true) {
+          $redis->select($_GET['database']);
+          $result = (bool) $redis->move($_GET['key'], $_GET['target-database']);
+          if ($result === false) {
+            $redis->select($_GET['target-database']);
+            $keys = $redis->keys($_GET['key']);
+
+            $_SESSION['message'] = (array) [
+              'type' => (string) 'Error',
+              'text' => (string) '<p class="mb-0">Moving the key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> to database <span class="text-monospace font-weight-bold">'.$_GET['target-database'].'</span> failed.</p>',
+            ];
+            if (count($keys) !== 0) {
+              $_SESSION['message']['text'] .= '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> already exists in database <span class="text-monospace font-weight-bold">'.$_GET['target-database'].'</span>.</p>';
+            }
+            unset($keys);
+          }
+          header('Location: ./?page=database&database='.$_GET['database']);
+          exit();
+        }
+      }
+    }
+    /* ---------- /MOVE KEY TO DATABASE ---------- */
 
     /* ---------- EMPTY THE REDIS LOG FILE ---------- */
     if ($page === 'logfile' && isset($_GET['action']) === true && $_GET['action'] === 'empty') {
       if (isset($redis_configuration['logfile']) === true && $redis_configuration['logfile'] !== '' && file_exists($redis_configuration['logfile']) === true && is_readable($redis_configuration['logfile']) === true && is_writeable($redis_configuration['logfile']) === true) {
         fclose(fopen($redis_configuration['logfile'], 'w'));
         header('Location: ./?page=logfile');
+        exit();
       }
     }
     /* ---------- /EMPTY THE REDIS LOG FILE ---------- */
@@ -65,7 +101,7 @@
 ?>
 
 <!doctype html>
-<html lang="<?php echo $redis_configuration['language']; ?>" class="h-100">
+<html lang="<?php echo $robin_configuration['language']; ?>" class="h-100">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -144,7 +180,7 @@
 
               if ($page === 'database') {
                 $out .= '<h2>Database: '.$database.'</h2>';
-                if (in_array(range(0, intval($redis_configuration['databases'])-1), $database) === false) {
+                if (redis_database_exists($redis_configuration['databases'], $database) === false) {
                   $out .= '<div class="alert alert-info" role="alert">';
                   $out .= 'The database you specified does not exist.';
                   $out .= '<br>';
@@ -167,26 +203,26 @@
                     $out .= '</tr>';
                     $out .= '</thead>';
                     $out .= '<tbody>';
-                    for ($i = (int) 0; $i < count($keys); $i++) {
-                      $key = $keys[$i];
+                    for ($ki = (int) 0; $ki < count($keys); $ki++) {
+                      $key = $keys[$ki];
                       $ttl = $redis->ttl($key);
                       $pttl = $redis->pttl($key);
 
                       $out .= '<tr>';
-                      $out .= '<td class="nowrap text-monospace">'.$i.'</td>';
-                      $out .= '<td class="nowrap text-monospace">'.htmlentities($keys[$i], ENT_QUOTES).'</td>';
+                      $out .= '<td class="nowrap text-monospace">'.$ki.'</td>';
+                      $out .= '<td class="nowrap text-monospace">'.htmlentities($keys[$ki], ENT_QUOTES).'</td>';
                       $out .= '<td class="nowrap text-monospace">'.htmlentities(redis_key_type_as_string($redis->type($key)), ENT_QUOTES).'</td>';
                       $out .= '<td class="nowrap text-monospace">'.(($ttl === -1 || $ttl === -2) ? '' : $ttl.' / '.$pttl).'</td>';
                       $out .= '<td class="nowrap"><a href="#" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Edit</a></td>';
-                      $out .= '<td class="nowrap"><a href="#" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Rename</a></td>';
+                      $out .= '<td class="nowrap"><a href="#" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Rename to:</a></td>';
                       $out .= '<td class="nowrap">';
                       $out .= '<div class="dropdown">';
-                      $out .= '<a href="#" class="btn btn-warning btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdownMenuLink'.$i.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Move to database:</a>';
-                      $out .= '<div class="dropdown-menu" aria-labelledby="dropdownMenuLink'.$i.'">';
+                      $out .= '<a href="#" class="btn btn-warning btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdown-mtd-'.$ki.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Move to database:</a>';
+                      $out .= '<div class="dropdown-menu" aria-labelledby="dropdown-mtd-'.$ki.'">';
                       if (isset($redis_configuration['databases']) === true) {
-                        for ((int) $i = 0; $i <= intval($redis_configuration['databases'])-1; $i++) {
-                          if ($i !== $database) {
-                            $out .= '<a class="dropdown-item" href="./?page=database&database='.$database.'">'.$i.'</a>';
+                        for ($di = (int) 0; $di <= intval($redis_configuration['databases'])-1; $di++) {
+                          if ($di !== $database) {
+                            $out .= '<a class="dropdown-item" href="./?page=database&database='.$database.'&amp;target-database='.$di.'&amp;key='.urlencode($keys[$ki]).'">'.$di.'</a>';
                           }
                         }
                       }
@@ -293,6 +329,40 @@
         </div>
       </div>
     </div>
+
+    <?php if (isset($_SESSION['message']) === true): ?>
+      <div class="modal" id="messageModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"><?php echo htmlentities($_SESSION['message']['type'], ENT_QUOTES); ?></h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <?php echo $_SESSION['message']['text']; ?>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        const openMessageModal = function(){
+          $('#messageModal').modal('show')
+        };
+
+        if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) {
+          openMessageModal();
+        } else {
+          document.addEventListener('DOMContentLoaded', openMessageModal);
+        }
+      </script>
+      <?php unset($_SESSION['message']); ?>); ?>
+    <?php endif; ?>
+
     <script src="js/jquery-3.4.1.slim.min.js"></script>
     <script src="js/bootstrap.bundle.min.js"></script>
     <script src="js/fontawesome.js"></script>
