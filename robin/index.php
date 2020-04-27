@@ -90,6 +90,7 @@
           $redis->select($_GET['database']);
           $result = (bool) $redis->move($_GET['key'], $_GET['target-database']);
           if ($result === false) {
+            // better: $redis->exists('key');
             $keys_origin_database = $redis->keys($_GET['key']);
             $redis->select($_GET['target-database']);
             $keys_target_database = $redis->keys($_GET['key']);
@@ -144,19 +145,19 @@
             <hr>
             <ul class="nav flex-column">
               <li class="nav-item">
-                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=start">Start</a>
+                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=start"><?php echo ($page === 'start' ? '<i class="fas fa-angle-right"></i> ' : ''); ?>Start</a>
               </li>
               <li class="nav-item">
-                 <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=databases">Databases</a>
+                 <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=databases"><?php echo (($page === 'databases' || $page === 'database') ? '<i class="fas fa-angle-right"></i> ' : ''); ?>Databases</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=configuration">Configuration</a>
+                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=configuration"><?php echo ($page === 'configuration' ? '<i class="fas fa-angle-right"></i> ' : ''); ?>Configuration</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=info">Information and statistics</a>
+                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=info"><?php echo ($page === 'info' ? '<i class="fas fa-angle-right"></i> ' : ''); ?>Information and statistics</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=logfile">Log file</a>
+                <a class="nav-link pl-0 pr-0 pb-0 text-white" href="./?page=logfile"><?php echo ($page === 'logfile' ? '<i class="fas fa-angle-right"></i> ' : ''); ?>Log file</a>
               </li>
             </ul>
           </div>
