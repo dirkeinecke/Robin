@@ -5,38 +5,10 @@
   include_once 'php/functions.php';
   include_once 'php/strings/'.$robin_configuration['language'].'.php';
 
-  $page = (string) '';
-  if (isset($_GET['page']) === true) {
-    switch ($_GET['page']) {
-      case 'start':
-        $page = 'start';
-        break;
-      case 'databases':
-        $page = 'databases';
-        break;
-      case 'database':
-        $page = 'database';
-        if (isset($_GET['database']) === true) { // ToDo: Check if number
-          $database = (int) $_GET['database'];
-        } else {
-          header('Location: ./?page=databases');
-          exit();
-        }
-        break;
-      case 'configuration':
-        $page = 'configuration';
-        break;
-      case 'info':
-        $page = 'info';
-        break;
-      case 'logfile':
-        $page = 'logfile';
-        break;
-    }
-  }
-  if ($page === '') {
-    header('Location: ./?page=start');
-    exit();
+  $page = (string) set_page();
+  
+  if ($page === 'database') {
+    $database = (int) $_GET['database'];
   }
 
   $redis = new Redis();
