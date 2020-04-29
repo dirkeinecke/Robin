@@ -278,7 +278,7 @@
                       $out .= '<input type="hidden" name="key" value="'.$keys[$ki].'">';
                       $out .= '<div class="form-group">';
                       $out .= '<label for="input-rt-'.$ki.'">New name</label>';
-                      $out .= '<input type="text" class="form-control" name="target-key" id="input-rt-'.$ki.'" placeholder="New name" required>';
+                      $out .= '<input type="text" class="form-control form-control-sm" name="target-key" id="input-rt-'.$ki.'" placeholder="New name" required>';
                       $out .= '</div>';
                       $out .= '<button type="submit" class="btn btn-secondary btn-sm">Rename</button>';
                       $out .= '</form>';
