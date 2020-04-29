@@ -154,6 +154,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="css/bootstrap.min.css">
     <link rel="stylesheet" href="css/custom.css">
+    <script src="js/jquery-3.4.1.slim.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/fontawesome.js"></script>
+    <script src="js/functions.js"></script>
     <title>ROBIN - Redis database administration</title>
   </head>
   <body class="h-100">
@@ -419,11 +423,6 @@
         </div>
       </div>
     </div>
-    <script>
-      const openMessageModal = function(){
-        $('#messageModal').modal('show');
-      };
-    </script>
     <?php if (isset($_SESSION['message']) === true): ?>
       <script>
         if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) {
@@ -435,8 +434,5 @@
       <?php unset($_SESSION['message']); ?>); ?>
     <?php endif; ?>
 
-    <script src="js/jquery-3.4.1.slim.min.js"></script>
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="js/fontawesome.js"></script>
   </body>
 </html>
