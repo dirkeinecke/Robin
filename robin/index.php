@@ -52,7 +52,35 @@
     }
     /* ---------- /DELETE ALL KEYS FROM THE CURRENT DATABASE ---------- */
 
-    /* ---------- MOVE KEY TO DATABASE ---------- */
+    /* ---------- RENAME KEY ---------- */ // ToDo: Check parameters better/ more completely.
+    if ($page === 'database' && isset($_GET['database']) === true && isset($_GET['key']) === true && isset($_GET['target-key']) === true && isset($redis_configuration['databases']) === true) {
+      $_GET['database'] = intval($_GET['database']);
+
+      if (redis_database_exists($redis_configuration['databases'], $_GET['database']) === true) {
+        $redis->select($_GET['database']);
+        $result = (bool) $redis->renameNx($_GET['key'], $_GET['target-key']);
+
+        if ($result === false) {
+          $_SESSION['message'] = (array) [
+            'type' => (string) 'Error',
+            'text' => (string) '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> could not be renamed.</p>',
+          ];
+
+          if ($redis->exists($_GET['key']) === 0) {
+            $_SESSION['message']['text'] .= '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> does not exist.</p>';
+          }
+          
+          if ($redis->exists($_GET['target-key']) === 0) {
+            $_SESSION['message']['text'] .= '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['target-key'].'</span> (new name) already exist.</p>';
+          }
+        }
+        header('Location: ./?page=database&database='.$_GET['database']);
+        exit();
+      }
+    }
+    /* ---------- /RENAME KEY ---------- */
+
+    /* ---------- MOVE KEY TO DATABASE ---------- */ // ToDo: Check parameters better/ more completely.
     if ($page === 'database' && isset($_GET['database']) === true && isset($_GET['target-database']) === true && isset($_GET['key']) === true && isset($redis_configuration['databases']) === true) {
       $_GET['database'] = intval($_GET['database']);
       $_GET['target-database'] = intval($_GET['target-database']);
@@ -83,8 +111,8 @@
     }
     /* ---------- /MOVE KEY TO DATABASE ---------- */
 
-    /* ---------- DELETE KEY FROM DATABASE ---------- */
-    if ($page === 'database' && isset($_GET['database']) === true && isset($_GET['key']) === true && isset($redis_configuration['databases']) === true) {
+    /* ---------- DELETE KEY FROM DATABASE ---------- */ // ToDo: Check parameters better/ more completely.
+    if ($page === 'database' && isset($_GET['database']) === true && isset($_GET['key']) === true && isset($_GET['action']) === true && $_GET['action'] === 'delete' && isset($redis_configuration['databases']) === true) {
       $_GET['database'] = intval($_GET['database']);
 
       if (redis_database_exists($redis_configuration['databases'], $_GET['database']) === true) {
@@ -240,7 +268,23 @@
                       $out .= '<td class="nowrap text-monospace">'.htmlentities(redis_key_type_as_string($redis->type($key)), ENT_QUOTES).'</td>';
                       $out .= '<td class="nowrap text-monospace">'.(($ttl === -1 || $ttl === -2) ? '' : $ttl.' / '.$pttl).'</td>';
                       $out .= '<td class="nowrap"><a href="#" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Edit</a></td>';
-                      $out .= '<td class="nowrap"><a href="#" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Rename to:</a></td>';
+                      $out .= '<td class="nowrap">';
+                      $out .= '<div class="dropdown">';
+                      $out .= '<a href="#" class="btn btn-secondary btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdown-rt-'.$ki.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Rename to:</a>';
+                      $out .= '<div class="dropdown-menu" aria-labelledby="dropdown-rt-'.$ki.'">';
+                      $out .= '<form method="get" action="./" class="px-3 py-1">';
+                      $out .= '<input type="hidden" name="page" value="database">';
+                      $out .= '<input type="hidden" name="database" value="'.$database.'">';
+                      $out .= '<input type="hidden" name="key" value="'.$keys[$ki].'">';
+                      $out .= '<div class="form-group">';
+                      $out .= '<label for="input-rt-'.$ki.'">New name</label>';
+                      $out .= '<input type="text" class="form-control" name="target-key" id="input-rt-'.$ki.'" placeholder="New name" required>';
+                      $out .= '</div>';
+                      $out .= '<button type="submit" class="btn btn-secondary btn-sm">Rename</button>';
+                      $out .= '</form>';
+                      $out .= '</div>';
+                      $out .= '</div>';
+                      $out .= '</td>';
                       $out .= '<td class="nowrap">';
                       $out .= '<div class="dropdown">';
                       $out .= '<a href="#" class="btn btn-warning btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdown-mtd-'.$ki.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Move to database:</a>';
