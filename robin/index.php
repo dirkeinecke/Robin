@@ -35,22 +35,22 @@
     }
     $redis_info = $redis->info();
 
-    /* ---------- REMOVE ALL KEYS FROM ALL DATABASES ---------- */
+    /* ---------- DELETE ALL KEYS FROM ALL DATABASES ---------- */
     if ($page === 'databases' && isset($_GET['action']) === true && $_GET['action'] === 'empty') {
       $redis->flushAll();
       header('Location: ./?page=databases');
       exit();
     }
-    /* ---------- /REMOVE ALL KEYS FROM ALL DATABASES ---------- */
+    /* ---------- /DELETE ALL KEYS FROM ALL DATABASES ---------- */
 
-    /* ---------- REMOVE ALL KEYS FROM THE CURRENT DATABASE ---------- */
+    /* ---------- DELETE ALL KEYS FROM THE CURRENT DATABASE ---------- */
     if ($page === 'database' && isset($_GET['action']) === true && $_GET['action'] === 'empty' && redis_database_exists($redis_configuration['databases'], $database) === true) {
       $redis->select($database);
       $redis->flushDb();
       header('Location: ./?page=database&database='.$database);
       exit();
     }
-    /* ---------- /REMOVE ALL KEYS FROM THE CURRENT DATABASE ---------- */
+    /* ---------- /DELETE ALL KEYS FROM THE CURRENT DATABASE ---------- */
 
     /* ---------- MOVE KEY TO DATABASE ---------- */
     if ($page === 'database' && isset($_GET['database']) === true && isset($_GET['target-database']) === true && isset($_GET['key']) === true && isset($redis_configuration['databases']) === true) {
@@ -175,7 +175,7 @@
               if ($page === 'databases') {
                 $out .= '<h2>Databases</h2>';
                 $out .= '<div class="text-right mb-2">';
-                $out .= '<a href="./?page=databases&amp;action=empty" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Remove all keys from all databases</a>';
+                $out .= '<a href="./?page=databases&amp;action=empty" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Delete all keys from all databases</a>';
                 $out .= '</div>';
                 $out .= '<table class="table table-bordered table-sm table-hover">';
                 $out .= '<thead>';
@@ -215,7 +215,7 @@
                   $out .= '<h3>Keys</h3>';
                   if (count($keys) !== 0) {
                     $out .= '<div class="text-right mb-2">';
-                    $out .= '<a href="./?page=database&amp;database='.$database.'&amp;action=empty" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Remove all keys from the current database</a>';
+                    $out .= '<a href="./?page=database&amp;database='.$database.'&amp;action=empty" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Delete all keys from the current database</a>';
                     $out .= '</div>';
 
                     $out .= '<table class="table table-bordered table-sm table-hover">';
