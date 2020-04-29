@@ -8,7 +8,7 @@
   $page = (string) set_page();
   
   if ($page === 'database') {
-    $database = (int) $_GET['database'];
+    $database = intval($_GET['database']);
   }
 
   $redis = new Redis();
@@ -67,12 +67,12 @@
               'text' => (string) '<p class="mb-0">Moving the key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> to database <span class="text-monospace font-weight-bold">'.$_GET['target-database'].'</span> failed.</p>',
             ];
             
-            if (count($redis->keys($_GET['key'])) === 0) {
+            if ($redis->exists($_GET['key']) === 0) {
               $_SESSION['message']['text'] .= '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> does not exist in database <span class="text-monospace font-weight-bold">'.$_GET['database'].'</span>.</p>';
             }
 
             $redis->select($_GET['target-database']);
-            if (count($redis->keys($_GET['key'])) !== 0) {
+            if ($redis->exists($_GET['key']) !== 0) {
               $_SESSION['message']['text'] .= '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> already exists in database <span class="text-monospace font-weight-bold">'.$_GET['target-database'].'</span>.</p>';
             }
           }
@@ -82,6 +82,30 @@
       }
     }
     /* ---------- /MOVE KEY TO DATABASE ---------- */
+
+    /* ---------- DELETE KEY FROM DATABASE ---------- */
+    if ($page === 'database' && isset($_GET['database']) === true && isset($_GET['key']) === true && isset($redis_configuration['databases']) === true) {
+      $_GET['database'] = intval($_GET['database']);
+
+      if (redis_database_exists($redis_configuration['databases'], $_GET['database']) === true) {
+        $redis->select($_GET['database']);
+        $result = (int) $redis->del($_GET['key']);
+
+        if ($result !== 1) {
+          $_SESSION['message'] = (array) [
+            'type' => (string) 'Error',
+            'text' => (string) '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> could not be deleted.</p>',
+          ];
+          
+          if ($redis->exists($_GET['key']) === 0) {
+            $_SESSION['message']['text'] .= '<p class="mb-0">The key <span class="text-monospace font-weight-bold">'.$_GET['key'].'</span> does not exist in database <span class="text-monospace font-weight-bold">'.$_GET['database'].'</span>.</p>';
+          }
+        }
+        header('Location: ./?page=database&database='.$_GET['database']);
+        exit();
+      }
+    }
+    /* ---------- /DELETE KEY FROM DATABASE ---------- */
 
     /* ---------- EMPTY THE REDIS LOG FILE ---------- */
     if ($page === 'logfile' && isset($_GET['action']) === true && $_GET['action'] === 'empty') {
@@ -206,7 +230,7 @@
                     $out .= '</thead>';
                     $out .= '<tbody>';
                     for ($ki = (int) 0; $ki < count($keys); $ki++) {
-                      $key = $keys[$ki];
+                      $key = (string) $keys[$ki];
                       $ttl = $redis->ttl($key);
                       $pttl = $redis->pttl($key);
 
@@ -231,7 +255,7 @@
                       $out .= '</div>';
                       $out .= '</div>';
                       $out .= '</td>';
-                      $out .= '<td class="nowrap"><a href="#" class="btn btn-danger btn-sm pt-0 pb-0" role="button">Delete</a></td>';
+                      $out .= '<td class="nowrap"><a href="./?page=database&database='.$database.'&amp;key='.urlencode($keys[$ki]).'&amp;action=delete" class="btn btn-danger btn-sm pt-0 pb-0" role="button">Delete</a></td>';
                       $out .= '</tr>';
                     }
                     $out .= '</tbody>';
