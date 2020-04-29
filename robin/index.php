@@ -340,8 +340,7 @@
               }
 
               if ($page === 'info') {
-                $out .= '<h2>Info</h2>';
-                $out .= '<p>Information and statistics about the server</p>';
+                $out .= '<h2>Information and statistics</h2>';
                 $out .= '<table class="table table-bordered table-sm table-hover">';
                 $out .= '<thead>';
                 $out .= '<tr>';
