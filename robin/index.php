@@ -207,7 +207,7 @@
               if ($page === 'databases') {
                 $out .= '<h2>Databases</h2>';
                 $out .= '<div class="text-right mb-2">';
-                $out .= '<a href="./?page=databases&amp;action=empty" class="btn btn-danger btn-sm pt-0 pb-0" role="button">Delete all keys from all databases</a>';
+                $out .= '<a href="#" class="btn btn-danger btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you want to delete all keys from all databases?<br>This cannot be undone." data-url="./?page=databases&amp;action=empty" onclick="openMessageModalQuestion(this)">Delete all keys from all databases</a>';
                 $out .= '</div>';
                 $out .= '<table class="table table-bordered table-sm table-hover">';
                 $out .= '<thead>';
@@ -248,7 +248,7 @@
                   if (count($keys) !== 0) {
                     $out .= '<div class="text-right mb-2">';
                     /*$out .= '<a href="#" class="btn btn-secondary btn-sm pt-0 pb-0 mr-3" role="button">Add key</a>';*/
-                    $out .= '<a href="./?page=database&amp;database='.$database.'&amp;action=empty" class="btn btn-danger btn-sm pt-0 pb-0" role="button">Delete all keys from the current database</a>';
+                    $out .= '<a href="#" class="btn btn-danger btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you want to delete all keys from the current database?<br>This cannot be undone." data-url="./?page=database&amp;database='.$database.'&amp;action=empty" onclick="openMessageModalQuestion(this)">Delete all keys from the current database</a>';
                     $out .= '</div>';
 
                     $out .= '<table class="table table-bordered table-sm table-hover">';
@@ -409,16 +409,18 @@
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title"><?php echo htmlentities($_SESSION['message']['type'], ENT_QUOTES); ?></h5>
+            <h5 class="modal-title"><?php echo (isset($_SESSION['message']['type']) === true ? htmlentities($_SESSION['message']['type'], ENT_QUOTES) : ''); ?></h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
           <div class="modal-body">
-            <?php echo $_SESSION['message']['text']; ?>
+            <?php echo (isset($_SESSION['message']['text']) === true ? $_SESSION['message']['text'] : ''); ?>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-outline-secondary action-no d-none" data-dismiss="modal">No</button>
+            <a href="#" class="btn btn-secondary action-yes d-none" role="button">Yes</a>
+            <button type="button" class="btn btn-secondary action-close" data-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
