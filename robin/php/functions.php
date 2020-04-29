@@ -1,4 +1,42 @@
 <?php
+  function set_page() {
+    $page = (string) '';
+
+    if (isset($_GET['page']) === true) {
+      switch ($_GET['page']) {
+        case 'start':
+          $page = 'start';
+          break;
+        case 'databases':
+          $page = 'databases';
+          break;
+        case 'database':
+          $page = 'database';
+          if (isset($_GET['database']) === false) { // ToDo: Check if number
+            header('Location: ./?page=databases');
+            exit();
+          }
+          break;
+        case 'configuration':
+          $page = 'configuration';
+          break;
+        case 'info':
+          $page = 'info';
+          break;
+        case 'logfile':
+          $page = 'logfile';
+          break;
+      }
+    }
+
+    if ($page === '') {
+      header('Location: ./?page=start');
+      exit();
+    }
+
+    return $page;
+  }
+
   function redis_key_type_as_string($type): string {
     $type_as_string = (string) '';
 
