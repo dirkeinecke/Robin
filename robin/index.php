@@ -304,7 +304,9 @@
                       $out .= '</div>';
                       $out .= '</div>';
                       $out .= '</td>';
-                      $out .= '<td class="nowrap"><a href="./?page=database&database='.$database.'&amp;key='.urlencode($keys[$ki]).'&amp;action=delete" class="btn btn-danger btn-sm pt-0 pb-0" role="button">Delete</a></td>';
+                      $out .= '<td class="nowrap">';
+                      $out .= '<a href="#" class="btn btn-danger btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you really want to delete the key <span class=\'text-monospace\'>'.htmlentities($keys[$ki], ENT_QUOTES).'</span>?<br>This cannot be undone." data-url="./?page=database&database='.$database.'&amp;key='.urlencode($keys[$ki]).'&amp;action=delete" onclick="openMessageModalQuestion(this)">Delete</a>';
+                      $out .= '</td>';
                       $out .= '</tr>';
                     }
                     $out .= '</tbody>';
