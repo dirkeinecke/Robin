@@ -207,7 +207,7 @@
               if ($page === 'databases') {
                 $out .= '<h2>Databases</h2>';
                 $out .= '<div class="text-right mb-2">';
-                $out .= '<a href="#" class="btn btn-danger btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you want to delete all keys from all databases?<br>This cannot be undone." data-url="./?page=databases&amp;action=empty" onclick="openMessageModalQuestion(this)">Delete all keys from all databases</a>';
+                $out .= '<a href="#" class="btn btn-link btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you want to delete all keys from all databases?<br>This cannot be undone." data-url="./?page=databases&amp;action=empty" onclick="openMessageModalQuestion(this)">Empty databases</a>';
                 $out .= '</div>';
                 $out .= '<table class="table table-bordered table-sm table-hover">';
                 $out .= '<thead>';
@@ -224,7 +224,7 @@
                     $out .= '<tr>';
                     $out .= '<td class="nowrap">'.$i.'</td>';
                     $out .= '<td class="nowrap">'.$redis->dbSize().'</td>';
-                    $out .= '<td class="nowrap"><a href="./?page=database&amp;database='.$i.'">Show</a></td>';
+                    $out .= '<td class="nowrap"><a href="./?page=database&amp;database='.$i.'">Browse</a></td>';
                     $out .= '</tr>';
                   }
                 }
@@ -247,8 +247,7 @@
                   $out .= '<h3>Keys</h3>';
                   if (count($keys) !== 0) {
                     $out .= '<div class="text-right mb-2">';
-                    /*$out .= '<a href="#" class="btn btn-secondary btn-sm pt-0 pb-0 mr-3" role="button">Add key</a>';*/
-                    $out .= '<a href="#" class="btn btn-danger btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you want to delete all keys from the current database?<br>This cannot be undone." data-url="./?page=database&amp;database='.$database.'&amp;action=empty" onclick="openMessageModalQuestion(this)">Delete all keys from the current database</a>';
+                    $out .= '<a href="#" class="btn btn-link btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you want to delete all keys from the current database?<br>This cannot be undone." data-url="./?page=database&amp;database='.$database.'&amp;action=empty" onclick="openMessageModalQuestion(this)">Empty database</a>';
                     $out .= '</div>';
 
                     $out .= '<table class="table table-bordered table-sm table-hover">';
@@ -272,10 +271,17 @@
                       $out .= '<td class="nowrap text-monospace">'.htmlentities($keys[$ki], ENT_QUOTES).'</td>';
                       $out .= '<td class="nowrap text-monospace">'.htmlentities(redis_key_type_as_string($redis->type($key)), ENT_QUOTES).'</td>';
                       $out .= '<td class="nowrap text-monospace">'.(($ttl === -1 || $ttl === -2) ? '' : $ttl.' / '.$pttl).'</td>';
-                      $out .= '<td class="nowrap"><a href="#" class="btn btn-secondary btn-sm pt-0 pb-0" role="button">Edit</a></td>';
                       $out .= '<td class="nowrap">';
                       $out .= '<div class="dropdown">';
-                      $out .= '<a href="#" class="btn btn-secondary btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdown-rt-'.$ki.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Rename to:</a>';
+                      $out .= '<a href="#" class="btn btn-link btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdown-e-'.$ki.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Edit</a>';
+                      $out .= '<div class="dropdown-menu" aria-labelledby="dropdown-e-'.$ki.'">';
+                      $out .= '<a class="dropdown-item" href="#">Value</a>';
+                      $out .= '</div>';
+                      $out .= '</div>';
+                      $out .= '</td>';
+                      $out .= '<td class="nowrap">';
+                      $out .= '<div class="dropdown">';
+                      $out .= '<a href="#" class="btn btn-link btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdown-rt-'.$ki.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Rename to:</a>';
                       $out .= '<div class="dropdown-menu" aria-labelledby="dropdown-rt-'.$ki.'">';
                       $out .= '<form method="get" action="./" class="px-3 py-1">';
                       $out .= '<input type="hidden" name="page" value="database">';
@@ -292,7 +298,7 @@
                       $out .= '</td>';
                       $out .= '<td class="nowrap">';
                       $out .= '<div class="dropdown">';
-                      $out .= '<a href="#" class="btn btn-warning btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdown-mtd-'.$ki.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Move to database:</a>';
+                      $out .= '<a href="#" class="btn btn-link btn-sm pt-0 pb-0 dropdown-toggle" role="button" id="dropdown-mtd-'.$ki.'" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Move to database:</a>';
                       $out .= '<div class="dropdown-menu" aria-labelledby="dropdown-mtd-'.$ki.'">';
                       if (isset($redis_configuration['databases']) === true) {
                         for ($di = (int) 0; $di <= intval($redis_configuration['databases'])-1; $di++) {
@@ -305,7 +311,7 @@
                       $out .= '</div>';
                       $out .= '</td>';
                       $out .= '<td class="nowrap">';
-                      $out .= '<a href="#" class="btn btn-danger btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you really want to delete the key <span class=\'text-monospace\'>'.htmlentities($keys[$ki], ENT_QUOTES).'</span>?<br>This cannot be undone." data-url="./?page=database&database='.$database.'&amp;key='.urlencode($keys[$ki]).'&amp;action=delete" onclick="openMessageModalQuestion(this)">Delete</a>';
+                      $out .= '<a href="#" class="btn btn-link btn-sm pt-0 pb-0" role="button" data-messagetype="Warning" data-messagetext="Do you really want to delete the key <span class=\'text-monospace\'>'.htmlentities($keys[$ki], ENT_QUOTES).'</span>?<br>This cannot be undone." data-url="./?page=database&database='.$database.'&amp;key='.urlencode($keys[$ki]).'&amp;action=delete" onclick="openMessageModalQuestion(this)">Delete</a>';
                       $out .= '</td>';
                       $out .= '</tr>';
                     }
